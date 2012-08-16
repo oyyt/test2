@@ -1,0 +1,18 @@
+<?php
+function checkXml()
+{
+
+	$xml = new DOMDocument(); 
+	$xml->load('./transfer.xml');
+	if (!$xml->schemaValidate('./check.xsd')) 
+	{
+		 echo "invalid<p/>";
+	}
+	else 
+	{ 
+		echo "validated<p/>"; 
+	}
+}
+
+
+?>

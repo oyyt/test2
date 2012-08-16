@@ -1,0 +1,33 @@
+<mashup xmlns="http://www.zju.edu.cn">
+  <variables/>
+  <process>
+    <getTerminalInput name="temp" label="temp" type="string" control="text" value="Michael Jackson"/>
+    <invoke id="invoke2" portType="Lastfm" operation="getArtistInfo">
+      <inputVariables>
+        <inputVariable name="artist" type="string" value="${temp}"/>
+      </inputVariables>
+      <outputVariables>
+        <outputVariable name="name" type="string"/>
+        <outputVariable name="smallImage" type="string"/>
+        <outputVariable name="url" type="string"/>
+        <outputVariable name="largeImage" type="string"/>
+        <outputVariable name="megaImage" type="string"/>
+      </outputVariables>
+    </invoke>
+    <invoke id="invoke3" portType="Flickr" operation="getPhotos">
+      <inputVariables>
+        <inputVariable name="radius" defaultValue="not set"/>
+        <inputVariable name="lat" defaultValue="not set"/>
+        <inputVariable name="search_text" type="string" value="${invoke2.name}"/>
+        <inputVariable name="lon" defaultValue="not set"/>
+        <inputVariable name="number" defaultValue="not set"/>
+      </inputVariables>
+      <outputVariables>
+        <outputVariable name="longitude" type="string"/>
+        <outputVariable name="title" type="string"/>
+        <outputVariable name="thumbnailUrl" type="string"/>
+        <outputVariable name="latitude" type="string"/>
+      </outputVariables>
+    </invoke>
+  </process>
+</mashup>

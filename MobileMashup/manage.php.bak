@@ -1,0 +1,18 @@
+<?php
+require_once "compile.php";
+require_once "mashupExecute.php";
+require_once "check.php";
+
+checkXML();
+compileExecute();
+require_once "config.php";
+$tempResult = mashupExecute();
+
+echo "<pre>";
+print_r($tempResult);
+echo "</pre>";
+
+//$json = json_encode($tempResult);
+////手机拿到echo的东东
+//echo $json;
+?>

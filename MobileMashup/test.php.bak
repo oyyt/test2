@@ -1,0 +1,24 @@
+<mashup xmlns="http://www.zju.edu.cn">
+  <variables/>
+  <process>
+    <invoke id="invoke2" portType="Google" operation="getGeoLocation">
+      <inputVariables>
+        <inputVariable name="cid" type="string" value="${invoke1.cid}"/>
+      </inputVariables>
+      <outputVariables>
+        <outputVariable name="longitude" type="string"/>
+        <outputVariable name="latitude" type="string"/>
+        <outputVariable name="radius" type="string"/>
+      </outputVariables>
+    </invoke>
+    <invoke id="invoke3" portType="GoogleStaticMap" operation="addMarkers">
+      <inputVariables>
+        <inputVariable name="lon" type="string" value="${invoke2.longitude}"/>
+        <inputVariable name="lat" type="string" value="${invoke2.latitude}"/>
+      </inputVariables>
+      <outputVariables>
+        <outputVariable name="url" type="string"/>
+      </outputVariables>
+    </invoke>
+  </process>
+</mashup>

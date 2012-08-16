@@ -1,0 +1,99 @@
+模块化迁移
+mahsupEngine.js
+P480
+/*
+ * change the execute list from local to cloud
+ * args head: head of the list.
+ * return: head of the changed list.
+ */
+function changeListLocal2Cloud(head){
+	if(head == null){
+		return head;
+	}
+	var node = head;
+	var prev = head;
+	while(node != null){
+		if(node instanceof Invoke){
+			var cloudInvoke = new Invoke("C" + node.id, 'Proxy', 'getResult', node.inputTypes, node.inputValues, [], []);
+			cloudInvoke.parent = node.parent;
+			cloudInvoke.origin = node;
+			if(node == head){
+				head = cloudInvoke;
+			}
+			else{
+				prev.next = cloudInvoke;	
+			}
+			while(node.next != null && (node.next instanceof Invoke)){
+				node = node.next;
+			}
+			cloudInvoke.next = node.next;
+			prev = cloudInvoke;
+			node = node.next;
+		}
+		else{
+			prev = node;
+			node = node.next;
+		}
+	}
+	return head;
+}
+
+
+
+P26
+/*
+ this._netstat == 0
+ 判断网络是否连通的过程没有结束
+ this._netstat == 1
+ 表示proxy可以使用
+ this._netstat == 2
+ 表示proxy不可用，需要使用手机本地应用程序
+ */
+
+ run: function(){
+    	   
+    	    if(this._netstat == 0){
+    	    		return;
+    	    }
+    	    if(this._netstat == 1){
+    	    		this.currentActivity = changeListLocal2Cloud(this.currentActivity);
+    	    }
+    	    myConsole.log += "netstat " + this._netstat + "\n";
+    	    //printList(this.currentActivity);
+        this._waiting = false;
+        this.execute();
+    },
+
+
+P268
+    if(invoke.origin == null  && this._netstat == 1){
+    		var checkCloudInvokee = new Proxy_checkProxy('checkcloud');
+    		checkCloudInvokee.run();
+    }
+
+    
+environment.js
+P21
+当没有拿到200，交互成功的时候，自动会超时10+s，然后处理src.error()
+
+services.js
+P29
+function sendXml(){
+    this.url = "http://192.168.7.112/MobileMashup/receivexml.php";
+    this.send = function(){
+        var h = new head("Content-Type", "application/x-www-form-urlencoded");
+        var a = new Array(h);
+       environment.getRequest(this, this.url, a, "xml="+encodeURIComponent(sss));
+   //   environment.getRequest(this, this.url, a, "xml="+encodeURI(sss));
+    };
+    this.handle = function(xmlHttp){
+        myConsole.log += "xml sended\n";
+        engine._netstat = 1;
+        engine.run();
+    };
+    this.error = function(){
+    		myConsole.log += "sendXml.error()\n";
+    		engine._netstat = 2;
+    		engine.run();
+    }
+}

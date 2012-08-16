@@ -1,0 +1,22 @@
+<mashup xmlns="http://www.zju.edu.cn">
+  <variables>
+    <variable name="11" type="int" value="11"/>
+  </variables>
+  <process>
+    <invoke id="invoke2" portType="Flickr" operation="getPhotos">
+      <inputVariables>
+        <inputVariable name="lat" type="string" value="${invoke1.lat}"/>
+        <inputVariable name="radius" type="string" value="${invoke1.radius}"/>
+        <inputVariable name="lon" type="string" value="${invoke1.lon}"/>
+        <inputVariable name="number" type="string" value="${invoke1.number}"/>
+        <inputVariable name="search_text" type="string" value="${invoke1.search_text}"/>
+      </inputVariables>
+      <outputVariables>
+        <outputVariable name="thumbnailUrl" type="string"/>
+        <outputVariable name="longitude" type="string"/>
+        <outputVariable name="title" type="string"/>
+        <outputVariable name="latitude" type="string"/>
+      </outputVariables>
+    </invoke>
+  </process>
+</mashup>

@@ -1,0 +1,91 @@
+<?php
+require_once "http.php";
+//$test = new flickr();
+//$test->getPicture("È«ÃñÇéµÐ","");
+
+class Flickr{
+
+function getPicture($inputValues,$outputNames)
+{
+	
+//	echo flickrrrrrrrrrrrrrrrrrrrrrr;
+// 	var_dump ($inputValues);
+ 	$radius = $inputValues[0];
+ 	$lat = $inputValues[1];
+ 	$searchText = $inputValues[2];
+ 	$lon = $inputValues[3];
+ 	$number = $inputValues[4];
+ 	if($radius == "not set" || $lat == "not set" || $lon =="not set")
+ 	{
+ 		 
+ 		$temp = $this->flickr_search($radius, $lat, $searchText, $lon, $number);
+ 		$result =$this->flickr_getinfo($temp);
+ 	}
+ 	return $result;
+
+}
+	
+function flickr_search($radius, $lat, $searchText, $lon, $number)
+{
+	 echo $searchText;
+	  if ($number == "not set" || $number =="")
+	  {
+	  	$number = 3;
+	  }
+	  $url = 'http://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=883c48edd8529b750ea92270dc01bc0d&text='.$searchText.'&per_page='.$number.'&format=json&nojsoncallback=1';
+       $obj = http($url);
+       return $obj;
+}
+
+//invoke('invoke3','Flickr','getPhotos',array('not set','not set','${invoke2.name}','not set','not set'),array('longitude','title','thumbnailUrl','latitude'));
+function flickr_getinfo($photo)
+{
+    var_dump($photo);
+    $a = $photo->{'photos'};
+    $photo = $a->{'photo'};
+    foreach ($photo as $a){
+    	  $array_photo[] = $a;
+    	}
+    	
+    	for($i = 0; $i<sizeof($array_photo); $i++){
+    	   $title = $array_photo[$i]->{'title'};
+    	   $farmid = $array_photo[$i]->{'farm'};
+    	   $serverid = $array_photo[$i]->{'server'};
+    	   $id = $array_photo[$i]->{'id'};
+    	   $secret = $array_photo[$i]->{'secret'};
+    	   $owner = $array_photo[$i]->{'owner'};
+    	   $thumb_url = "http://farm{$farmid}.static.flickr.com/{$serverid}/{$id}_{$secret}.jpg";
+    	   $page_url = "http://www.flickr.com/photos/{$owner}/{$id}";
+     //    	   $image_html = "<a href = '{$page_url}'><img alt = '{$title}' src='{$thumb_url}'/></a>";
+    	  //    	   print "<p>$image_html</p>";
+    	   $imageurl = 'http://api.flickr.com/services/rest/?method=flickr.photos.geo.getLocation&api_key=3df24395c4480be75546067f58295137&photo_id='.$id.'&format=json&nojsoncallback=1';
+    	    
+    	    $obj = http($imageurl);
+    	    $stat = $obj->{'stat'};
+    	    if($stat == "fail")
+    	    {
+    	    	$longitude = "No longitude";
+    	    	$latitude = "No latitude";
+    	    }
+    	    else
+    	    {
+    	     echo "<pre>";
+    	      print_r($obj);
+    	      echo "</pre>";
+    	    }
+    	   	$result[$i] = array(
+	   'longitude' => $longitude,
+	   'title' => $title,
+	   'thumbnailUrl' => $thumb_url,
+	   'latitude' => $latitude,
+	   );
+    	 }
+//   	 var_dump($result);
+      return $result;
+}
+}
+?>  
+	
+	
+	
+	 

@@ -1,0 +1,104 @@
+<?php
+function sendResult($activity,$result)
+{
+ 
+//echo "<pre>";
+//print_r($result);
+//echo "</pre>";
+     unset($backResult);
+	$size = sizeof($activity);
+	$activity2 = $activity;
+	$backResult['stat'] = 'ok';
+ 	$backResult['data'] = array();
+ 	$maxSize = 0;
+	for ($i = 0; $i < $size; $i++)
+	{
+		    $aa = array_shift($activity2);
+		    $tempSize = sizeof($result[$aa]['outputValues']);
+		    if ($maxSize < $tempSize)
+		    {
+		    	     $maxSize = $tempSize;
+		    }
+	}
+	
+	for ($i =0; $i < $size; $i++)
+	{
+		$tempActivity = array_shift($activity);
+		$type = $result[$tempActivity]['APIType'];
+		$id =  $result[$tempActivity]['id'];
+	//	echo $type;
+ //		if($_GET){
+ 
+ 
+         if ($type == "Flickr"){
+	 	        $photoSize = sizeof($result[$tempActivity]['outputValues']);
+	 	             for ($j= 0; $j < $photoSize; $j++){
+	 	             	if ($j < $photoSize){
+	 	             	    $backResult['data'][$id][]  =
+	 	             	     array (
+			                       'id'	 => $j + 1,
+			                       'title' => $result[$tempActivity]['outputValues'][$j]['title'] ,
+			                       'mediumUrl' => $result[$tempActivity]['outputValues'][$j]['thumbnailUrl'],
+			            //           'url' => $result[$tempActivity]['outputValues'][$j]['thumbnailUrl'],
+			                         'url' => 'http://localhost/MobileMashup/image/1.jpg';
+			                       );
+			         }
+			       else {
+			       	$backResult['data'][$id][]  =
+	 	             	     array (
+			                       'id'	 => $j + 1,
+			                       'title' => $result[$tempActivity]['outputValues'][0]['title'] ,
+			                       'mediumUrl' => "No valid value!",
+			                       'url' => "No valid value!"
+			                       );
+			      }
+			    }
+		}
+         
+         
+         if ($type == "Lastfm"){
+         	$lastfmSize = sizeof($result[$tempActivity]['outputValues']);
+	 	        	   $difSize = $maxSize - $lastfmSize +1;
+	 	        	   echo $difSize;
+	 	             for ($j= 0; $j < $maxSize; $j++){
+	 	             	   if ($j < $lastfmSize)
+	 	             	   {
+	 	             	    $backResult['data'][$id][]  =
+	 	             	     array (
+			                       'name'	 => $result[$tempActivity]['outputValues'][$j]['name'],
+			                      'smallImage' => $result[$tempActivity]['outputValues'][$j]['smallImage'] ,
+			                       'url' => $result[$tempActivity]['outputValues'][$j]['url'],
+				                  'largeImage' =>  $result[$tempActivity]['outputValues'][$j]['largeImage'],
+				                  'megaImage' => $result[$tempActivity]['outputValues'][$j]['megaImage'],
+			                       );
+			             }
+			             else
+			             {
+			             	    $backResult['data'][$id][]  =
+	 	             	             array (
+			                       'name'	 => $result[$tempActivity]['outputValues'][0]['name'],
+			                      'smallImage' => "No valid value!" ,
+			                       'url' => "No valid value!",
+				                  'largeImage' =>  "No valid value!",
+				                  'megaImage' => "No valid value!",
+			                       );
+			             }
+			         }
+	        }
+	        
+
+}
+
+
+	
+//echo "<pre>";
+//print_r($backResult);
+//echo "</pre>";
+//	$json = json_encode($backResult);
+//	//手机拿到echo的东东
+//	echo $json;
+
+return $backResult;
+}
+
+ 

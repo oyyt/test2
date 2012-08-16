@@ -1,0 +1,273 @@
+
+1.发送xml
+(1)
+D:\Qt\MyQtProjects\MobileMashupTest 
+main.cpp
+13行
+#include <QFile>    //new added 为了读文件
+37行
+ /* read xml */
+    QFile file(":/xml.xml");
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return 1;
+    }
+    QTextStream fs(&file);
+    QString sss(fs.readAll());
+
+    myView.view.rootContext()->setContextProperty("myNetworkInfo", myNetworkInfo); //这一行不是new added
+    myView.view.rootContext()->setContextProperty("sss", sss);  //the former is var in js, and the last is var in c++
+
+(2)  
+D:\Qt\MyQtProjects\MobileMashupTest
+service.js //head和environment相关
+function head(k, v){
+    this.Key = k;
+    this.Value = v;
+}
+function sendXml(){
+    this.url = "http://192.168.2.73/receivexml.php";
+    this.send = function(){
+        var h = new head("Content-Type", "application/x-www-form-urlencoded");
+        //CONTENT-TYPE:application/x-www-form-urlencoded含义是表示客户
+        //端提交给服务器文本内容的编码方式是URL编码，即除了标准字符外，每字节以双字节16进制前加个“%”表示
+        var a = new Array(h);
+        environment.getRequest(this, this.url, a, "xml="+encodeURIComponent(sss));
+    };
+    this.handle = function(xmlHttp){
+        myConsole.log += "xml sended\n";
+    }
+}
+
+(3)D:\Qt\MyQtProjects\MobileMashupTest
+mashupEngine.js
+19行
+myConsole.log += "Start send xml\n";
+var sx = new sendXml();
+sx.send();
+
+(4)
+xml更名的问题
+三个地方
+main.cpp
+mashupEngine.js
+service.js
+
+2.显示结果
+
+
+手机端/////////////////////////////////////
+D:\Qt\MyQtProjects\MobileMashupTest\service.js
+在最后的部分744行左后
+/*
+ * service: Proxy_getResult
+ * example of url: http://oyyt.com/getresult.php
+ */
+function Proxy_getResult(invokeId) {
+    this.url = "http://192.168.2.73/getresult.php?"  
+    
+    //向服务器发起请求，拿结果数据
+    
+    this.run = function(args) {
+        var text = args.search_text, 
+        per_page = args.number, 
+        lat=args.lat, 
+        lon=args.lon, 
+        radius=args.radius;
+        var paras = "&text=" + text + "&per_page=" + per_page + "&lat=" + lat + "&lon=" + lon + "&radius=" + radius;
+        environment.getRequest(this, this.url+paras);
+    };
+
+    this.handle = function(xmlHttp) {
+    //把json变成数组
+        eval("var datas = " + xmlHttp.responseText);
+    //异常处理
+        if(datas.stat != "ok")
+        {
+            var errMsg = "proxy returned an unknown error";
+            throw errMsg;
+        }
+        var results = this._getPhotoArrayFromJSON(datas);
+        engine.insertResult(results);
+        engine.resume();
+    };
+
+    this._getPhotoArrayFromJSON = function(datas) {
+        var photoArray = new Array();
+        var photos = datas.photos;
+        var count = datas.photos.length;
+        myConsole.log += count;
+        for(var i = 0; i < count; i++)
+        {
+            var photo = photos[i];
+            var id = photo.id;
+            var title = photo.title;
+            myConsole.log += "\n" + title;
+            var url = photo.url;
+            var mediumUrl = photo.mediumUrl;
+            photoArray.push(new _photo(id, title, url, mediumUrl));
+        }
+
+        return photoArray;
+    };
+
+    function _photo(id, title, url, mediumUrl)
+    {
+        this.id = id;
+        this.title = title;
+        this.url = mediumUrl;
+        this.thumbnailUrl = url;
+    };
+}
+
+D:\Qt\MyQtProjects\MobileMashupTest
+config.js
+只更改'Proxy', 'getResult'(note 下划线)
+
+服务器///////////////////////////////////////////////
+D:\AppServ\www
+getresult.php
+
+
+<?php
+if($_GET){
+	
+	$result = array(
+		'stat' => 'ok',
+		'photos' => array(
+			array(
+				'id'		=> 1,
+				'title'		=> 'hello',
+				'mediumUrl' => 'http://192.168.2.73/1.jpg',
+				'url'		=> 'http://192.168.2.73/1.jpg',
+			),
+			array(
+				'id'		=> 2,
+				'title'		=> 'world',
+				'mediumUrl' => 'http://192.168.2.73/2.jpg',
+				'url'		=> 'http://192.168.2.73/2.jpg',
+			),
+		)
+	);
+	$json = json_encode($result);
+	//手机拿到echo的东东
+	echo $json;
+}
+
+
+3.未解决的问题
+片显示好看点
+多图
+分部模块化
+2 个case
+
+如果要更改界面，将D:\tomcat\webapps\mobileMashup\WEB-INF\classes\template\QML   里面的resultPageConfig.js 
+copy to D:\Qt\MyQtProjects\MobileMashupTest
+
+JAVA D:\tomcat\webapps\mobileMashup\WEB-INF\classes\dart\mobilemashup\serviceImpl
+
+next 按钮
+(1)
+D:\Qt\MyQtProjects\MobileMashupTest
+MashupUI.qml
+166行
+  Button {
+            id: resultViewNextBtn
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 30
+            anchors.right: parent.right
+            anchors.rightMargin: 50
+            text: "Next"
+            function nextResult()
+            {
+                /* show the next result */
+                Engine.engine.nextResult();
+            }
+//qml 事件绑定  触发 Engine.engine.nextResult();
+            Component.onCompleted:resultViewNextBtn.clicked.connect(nextResult);
+        }
+        
+(2) 
+D:\Qt\MyQtProjects\MobileMashupTest
+mashupEngine.js
+184行
+nextResult: function(){
+        showTheNextResult();
+    }
+
+(3)
+D:\Qt\MyQtProjects\MobileMashupTest
+library.js
+12行
+var currentIndex = 0;
+333行
+function showTheNextResult(){
+
+    currentIndex += 1;
+    if(currentIndex >= resultConfigItems.length){
+        currentIndex = 0;
+    }
+    myConsole.log += "\nindex: "
+    myConsole.log += currentIndex;
+    for(var itemIndex in resultConfigItems) {
+        var item = resultConfigItems[itemIndex];
+        var obj = resultCtrlArray[itemIndex];
+        switch(item.type) {
+        case "TEXTAREA":
+            myConsole.log += _getServiceOutputValue(item.target);
+            obj.text = "aaa";
+            break;
+        case "IMAGE":
+            myConsole.log += _getServiceOutputValue(item.target);
+            obj.source = _getServiceOutputValue(item.target);
+            break;
+        }
+    }
+}
+
+199行
+修改function _getServiceOutputValue(output)
+return mashup.context[invoke][currentIndex ][outputName].value;
+
+
+D:\Qt\MyQtProjects\MobileMashupTest把该目录下的所有文件copy to 
+D:\tomcat\webapps\mobileMashup\WEB-INF\classes\template\QML
+然后把build.bat改成D:\tomcat\webapps\mobileMashup\WEB-INF\classes\template\QML
+
+测试时间
+开始时间
+MashupEngine.js
+P21
+var d = new Date();
+var t = d.getTime();
+myConsole.log += "s: " + t + "\n";
+
+ImageArea.qml
+图片加载完成的时间
+library
+P212
+function _generateImageResultCtrl(item)
+{
+    var screenWidth = resultView.width;
+    var screenHeight = resultView.height;
+    var input = Qt.createComponent("ImageArea.qml");
+    if(input.status == Component.Ready)
+    {
+        var newImage = input.createObject(resultView);
+        if(newImage == null) {
+            console.log("generate TextArea error!");
+        } else {
+            newImage.source = _getServiceOutputValue(item.target);
+            newImage.enabled = false;
+            newImage.width = item.width*screenWidth;
+            newImage.height = item.height*screenHeight;
+            newImage.anchors.left = resultView.left;
+            newImage.anchors.top = resultView.top;
+            newImage.anchors.leftMargin = item.left*screenWidth;
+            newImage.anchors.topMargin = item.top*screenHeight;
+        }
+    }
+    else {
+        console.log("generate TextArea error!");
+    }
+    return newImage;
+}

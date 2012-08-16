@@ -1,0 +1,22 @@
+<?php 
+ //url: http://maps.google.com/maps/api/staticmap?size=512x512&maptype=roadmap
+ //&markers=color:blue|40.702147,-74.015794|40.711614,-74.012318&sensor=false
+
+//$a = array("40.70214","-74.015794");
+$a = array("40.79922","111.66038");
+$test = new GoogleStaticMap();
+$test->getInfo($a,"");
+
+class GoogleStaticMap
+{
+	function getInfo($inputValues, $outputValues)
+	{
+		$lat = $inputValues[0];
+		$lon = $inputValues[1];
+		$url = 'http://maps.google.com/maps/api/staticmap?size=512x512&maptype=roadmap&markers=color:green|'.$lat.','.$lon.'&sensor=false&zoom=12';
+		$result[] = $url;
+		return $result;
+	}	
+}
+?>
+

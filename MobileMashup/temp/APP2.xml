@@ -1,0 +1,40 @@
+<mashup xmlns="http://www.zju.edu.cn">
+  <variables>
+    <variable name="artilist" type="string" value="Michael Jackson"/>
+  </variables>
+  <process>
+    <invoke id="invoke2" portType="Lastfm" operation="getArtistInfo">
+      <inputVariables>
+        <inputVariable name="artist" type="string" value="${invoke1.artist}"/>
+      </inputVariables>
+      <outputVariables>
+        <outputVariable name="megaImage" type="string"/>
+        <outputVariable name="name" type="string"/>
+        <outputVariable name="url" type="string"/>
+        <outputVariable name="smallImage" type="string"/>
+        <outputVariable name="largeImage" type="string"/>
+      </outputVariables>
+    </invoke>
+    <invoke id="invoke3" portType="Flickr" operation="getPhotos">
+      <inputVariables>
+        <inputVariable name="radius" type="string" value="${invoke2.name}"/>
+        <inputVariable name="number" type="string" value="${invoke2.name}"/>
+        <inputVariable name="lon" type="string" value="${invoke2.name}"/>
+        <inputVariable name="search_text" type="string" value="${invoke2.megaImage}"/>
+        <inputVariable name="lat" type="string" value="${invoke2.name}"/>
+      </inputVariables>
+      <outputVariables>
+        <outputVariable name="longitude" type="string"/>
+        <outputVariable name="thumbnailUrl" type="string"/>
+        <outputVariable name="latitude" type="string"/>
+        <outputVariable name="title" type="string"/>
+      </outputVariables>
+    </invoke>
+    <invoke id="invoke4" portType="SinaMicroBlog" operation="updateStatus">
+      <inputVariables>
+        <inputVariable name="Status" type="string" value="${invoke3.thumbnailUrl}"/>
+      </inputVariables>
+      <outputVariables/>
+    </invoke>
+  </process>
+</mashup>
